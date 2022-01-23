@@ -1,0 +1,5 @@
+---
+mysql_root_password_update: true
+mysql_packages:
+  - mariadb-server
+  - mysql-common

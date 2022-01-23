@@ -1,0 +1,36 @@
+---
+- name: Securisation des accès serveur
+  hosts: all
+  remote_user: root
+  tasks:
+    - name: install ufw
+      package:
+        name: ufw
+
+    - name: Set logging
+      ufw:
+        logging: on
+
+    - ufw:
+        rule: allow
+        name: ssh
+
+
+    - ufw:
+        rule: allow
+        port: "{{item}}"
+        proto: tcp
+      with_items:
+        - "80"
+        - "443"
+
+    - name: limit connexion ssh
+      ufw:
+        rule: limit
+        port: ssh
+        proto: tcp
+
+    - name: Deny everything and enable UFW
+      ufw:
+        state: enabled
+        policy: deny

@@ -1,0 +1,64 @@
+---
+- name: Mise à jour de matomo
+  hosts: all
+  remote_user: root
+  gather_facts: yes
+  tasks:
+    - set_fact:
+        datetime: "{{ ansible_date_time.date }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+
+    - name: ensure working dir exist
+      file:
+        path: "{{working_dir}}"
+        state: directory
+
+    - name: backup mysql
+      shell: "mysqldump -u root -p{{mysql_root_password}} {{matomo_db.name}} > {{working_dir}}/{{matomo_db.name}}-{{datetime}}.sql"
+
+    - name: backup config file
+      copy:
+        src: "{{install_dir}}/config/config.ini.php"
+        dest: "{{working_dir}}/config.ini.php.{{datetime}}"
+        remote_src: yes
+
+    - name: backup install dir
+      copy:
+        src: "{{install_dir}}"
+        dest: "{{working_dir}}/matomo-{{datetime}}"
+        remote_src: yes
+
+
+    - name: download matomo
+      unarchive:
+        src: "https://builds.matomo.org/matomo-{{matomo_version}}.tar.gz"
+        dest: "{{working_dir}}"
+        remote_src: yes
+
+    - name: remove old matomo directory
+      file:
+        path: "{{install_dir}}"
+        state: absent
+
+    - name: copy new matomo version
+      copy:
+        src: "{{working_dir}}/matomo"
+        dest: "/usr/share"
+        remote_src: yes
+
+    - name: restore config file
+      copy:
+        src: "{{working_dir}}/config.ini.php.{{datetime}}"
+        dest: "{{install_dir}}/config/config.ini.php"
+        remote_src: yes
+
+    - name: ensure owner and group is ok
+      file:
+        path: "{{install_dir}}"
+        owner: "www-data"
+        group: "www-data"
+        recurse: yes
+
+    - name: remove working dir
+      file:
+        path: "{{working_dir}}"
+        state: absent

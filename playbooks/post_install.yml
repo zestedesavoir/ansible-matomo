@@ -1,0 +1,7 @@
+---
+- name: Post installation
+  hosts: all
+  remote_user: root
+  gather_facts: yes
+  tasks:
+    - shell: "php /usr/share/matomo/console core:update"

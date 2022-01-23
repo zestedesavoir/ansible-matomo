@@ -1,0 +1,17 @@
+---
+matomo_domain: "matomo.zestedesavoir.com"
+matomo_timezone: "Europe/Paris"
+matomo_https_certificate_admin_email: "technique@zestedesavoir.com"
+matomo_db_server: "{{ inventory_hostname }}"
+matomo_db:
+  host: "{{ (matomo_db_server == inventory_hostname) | ternary('127.0.0.1', matomo_db_server) }}"
+  name: "matomo"
+  user: "matomo"
+  table_prefix: ""
+
+# update
+install_dir: "/usr/share/matomo"
+working_dir: "/root/working"
+matomo_version: "4.2.1"
+
+# on ansible-vault (vault.yml) the are this variables: matomo_superuser_password, mysql_root_password

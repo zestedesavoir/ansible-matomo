@@ -1,0 +1,5 @@
+---
+- import_playbook: security.yml
+- import_playbook: matomo.yml
+- import_playbook: update_matomo.yml
+- import_playbook: post_install.yml

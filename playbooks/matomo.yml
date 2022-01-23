@@ -1,0 +1,27 @@
+---
+- name: Deploiement de matomo
+  hosts: all
+  remote_user: root
+  gather_facts: yes
+  pre_tasks:
+    - name: add mariadb repository key
+      apt_key:
+        id: 177F4010FE56CA3336300305F1656F24C74CD1D8
+        keyserver: "pool.sks-keyservers.net"
+
+    - name: add mariadb repository
+      apt_repository:
+        filename: mariadb
+        repo: "deb https://downloads.mariadb.com/MariaDB/mariadb-10.4/repo/debian {{ ansible_distribution_release }} main"
+        state: present
+      register: repo
+
+    - name: install packages
+      package:
+        name:
+          - php
+          - php-fpm
+          - nginx
+  roles:
+    - role: "mysql"
+    - role: "matomo"
