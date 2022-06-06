@@ -26,6 +26,21 @@ Lorsque l'on lance la commande  ̀make deploy` on demande l'executation des 3 pl
 - `update_matomo.yml`: mise à jour de matomo en version `matomo_version` (seule la version `4.2.1` a été testée avec succès)
 - `post_install.yml`: migration de la base de donnée mariadb vers la nouvelle version de matomo
 
+
+### Ajustements
+
+Augmenter la limite mémoire pour PHP, en modifiant `/etc/php/7.3/fpm/php.ini`
+(voir la
+[documentation](https://matomo.org/faq/on-premise/how-to-set-up-auto-archiving-of-your-reports/#increase-php-memory-limit)) :
+```
+memory_limit = 512M
+```
+Puis :
+```sh
+sudo service php7.3-fpm reload
+```
+
+
 ## Post install
 
 Lorsque l'installation est réalisée via ce playbook, pour compléter l'installation il est necessaire d'aller dans `Administration > Diagnostic > Verification du système` et consulter les problèmes qui subsistent encore (probablement des trucs à changer coté serveur) et corriger ces problèmes.
