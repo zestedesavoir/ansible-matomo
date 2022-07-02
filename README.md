@@ -72,3 +72,14 @@ Ensuite allez sur l'interface de matomo, `Administration > Système > Paramètre
 
 
 
+## Sauvegardes
+
+Les sauvegardes utilisent Borg et sont mises en place [comme sur le serveur de
+prod](https://github.com/zestedesavoir/ansible-zestedesavoir/blob/main/docs/backup.md).
+
+L'utilisateur `root` exécute les CRONs suivantes :
+```cron
+# m h  dom mon dow   command
+  0 3   *   *   6    /root/backups.sh full >> /var/log/zds/backups.log 2>&1
+  0 3   *   *  0-5   /root/backups.sh >> /var/log/zds/backups.log 2>&1
+```
