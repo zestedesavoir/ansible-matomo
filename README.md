@@ -33,7 +33,7 @@ Augmenter la limite mémoire pour PHP, en modifiant `/etc/php/7.3/fpm/php.ini`
 (voir la
 [documentation](https://matomo.org/faq/on-premise/how-to-set-up-auto-archiving-of-your-reports/#increase-php-memory-limit)) :
 ```
-memory_limit = 512M
+memory_limit = 1024M
 ```
 Puis :
 ```sh
