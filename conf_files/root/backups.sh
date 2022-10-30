@@ -93,6 +93,8 @@ db_clean()
 }
 
 
+# Big separator in log between executions of the script:
+echo "#######################################################################################################################"
 echo "Starting script ($(date))"
 
 full=0
@@ -116,3 +118,5 @@ curl -s -m 10 --retry 5 $(cat /root/healthchecks/matomo-sauvegardes.txt)
 echo # to make a newline after the "OK" written by curl
 
 echo "End of script ($(date))"
+# Big separator in log between executions of the script:
+echo "#######################################################################################################################"
