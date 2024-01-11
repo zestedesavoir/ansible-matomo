@@ -19,7 +19,7 @@ make deploy # installation de matomo (y compris l'installationd de mariadb, jusq
 
 ### Zoom sur les playbooks
 
-Lorsque l'on lance la commande  ̀make deploy` on demande l'executation des 3 playbooks suivants :
+Lorsque l'on lance la commande `make deploy` on demande l'executation des 3 playbooks suivants :
 
 - `security.yml` : application de quelques règles de sécurités sur le serveurs (ufw)
 - `matomo.yml`: installation et configuration de la version de matomo contenu dans le gestion de packet debian
