@@ -29,15 +29,15 @@ Lorsque l'on lance la commande `make deploy` on demande l'executation des 3 play
 
 ### Ajustements
 
-Augmenter la limite mémoire pour PHP, en modifiant `/etc/php/7.3/fpm/php.ini`
+Augmenter la limite mémoire pour PHP, en modifiant `/etc/php/8.2/fpm/php.ini`
 (voir la
 [documentation](https://matomo.org/faq/on-premise/how-to-set-up-auto-archiving-of-your-reports/#increase-php-memory-limit)) :
 ```
-memory_limit = 1024M
+memory_limit = 640M
 ```
 Puis :
 ```sh
-sudo service php7.3-fpm reload
+sudo service php8.2-fpm reload
 ```
 
 
