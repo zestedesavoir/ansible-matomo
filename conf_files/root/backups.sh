@@ -97,9 +97,7 @@ db_clean()
 echo "#######################################################################################################################"
 echo "Starting script ($(date))"
 
-full=0
 if [ "$#" -ge 1 ] && [ "$1" = "full" ]; then
-	full=1
 	echo "** Starting a local full backup of the database..."
 	db_local_backup full
 	db_clean
@@ -111,11 +109,21 @@ fi
 data_local_backup
 config_local_backup
 
-backup2beta
+set +e
+backup2beta2023; err1=$?
 # Call here functions to backup to external servers
+# backup2toto; err2=$?
+err=$((err1+err2))
+set -e
 
-curl -s -m 10 --retry 5 $(cat /root/healthchecks/matomo-sauvegardes.txt)
-echo # to make a newline after the "OK" written by curl
+if [ $err -gt 0 ]; then
+	echo "At least one backup failed!"
+else
+	echo "All backups completed successfully!"
+
+	curl -s -m 10 --retry 5 $(cat /root/healthchecks/matomo-sauvegardes.txt)
+	echo # to make a newline after the "OK" written by curl
+fi
 
 echo "End of script ($(date))"
 # Big separator in log between executions of the script:
