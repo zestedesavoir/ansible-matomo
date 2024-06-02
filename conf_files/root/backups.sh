@@ -3,11 +3,14 @@
 set -eu
 
 BORG_COMMAND=/usr/local/bin/borg
+BORG126_COMMAND=/usr/local/bin/borg1.2.6
 BACKUP_DATE=`date '+%Y%m%d-%H%M'`
 SAVE_ROOT_DIR=/var/backups/matomo
 DB_SAVED_DIR=$SAVE_ROOT_DIR/mysql
 DATA_SAVE_DIR=$SAVE_ROOT_DIR/matomo
 CONFIG_SAVE_DIR=$SAVE_ROOT_DIR/config
+VAULTWARDEN_DIR=/opt/vaultwarden
+VAULTWARDEN_DB_BACKUP_DIR=$VAULTWARDEN_DIR/db_backups
 
 db_local_backup()
 {
@@ -56,20 +59,44 @@ config_local_backup()
 	rsync -a /etc/matomo/ $CONFIG_SAVE_DIR
 }
 
-backup2beta()
+vaultwarden_local_backup()
 {
-	echo "Send backup to the beta server..."
-	$BORG_COMMAND create                                 \
-	    --verbose                                        \
-	    --filter AME                                     \
-	    --list                                           \
-	    --stats                                          \
-	    --show-rc                                        \
-	    --compression zstd,6                             \
-	    --exclude-caches                                 \
-	    --info                                           \
-	    beta-backup:/opt/sauvegarde/matomo::$BACKUP_DATE \
+	sqlite3 $VAULTWARDEN_DIR/data/db.sqlite3 ".backup '${VAULTWARDEN_DB_BACKUP_DIR}/${BACKUP_DATE}.sqlite3'"
+	cp /etc/systemd/system/vaultwarden.service $VAULTWARDEN_DIR/
+}
+
+backup2beta2023()
+{
+	echo "Send backup to the 2023 beta server..."
+	$BORG126_COMMAND create                                   \
+	    --verbose                                             \
+	    --filter AME                                          \
+	    --list                                                \
+	    --stats                                               \
+	    --show-rc                                             \
+	    --compression zstd,6                                  \
+	    --exclude-caches                                      \
+	    --info                                                \
+	    beta-backup-2023:/opt/sauvegarde/matomo::$BACKUP_DATE \
 	    $SAVE_ROOT_DIR
+}
+
+vaultwarden_backup2beta2023()
+{
+
+        echo "Send Vaultwarden backup to the 2023 beta server..."
+        BORG_PASSCOMMAND='cat /root/borg/beta-vaultwarden.passphrase'  \
+	    $BORG126_COMMAND create                                    \
+            --verbose                                                  \
+            --filter AME                                               \
+            --list                                                     \
+            --stats                                                    \
+            --show-rc                                                  \
+            --compression zstd,6                                       \
+            --exclude-caches                                           \
+            --info                                                     \
+	    beta-backup-2023:/opt/sauvegarde/vaultwarden::$BACKUP_DATE \
+	    $VAULTWARDEN_DIR
 }
 
 # Add here other functions to backup to external servers
@@ -92,6 +119,17 @@ db_clean()
 	[ -z "$TO_DELETE" ] || rm -r $TO_DELETE
 }
 
+vaultwarden_clean()
+{
+	echo "** Removing old local backups of the Vaultwarden database..."
+
+	# Keep 8 most recent backups
+	local to_delete="`echo $VAULTWARDEN_DB_BACKUP_DIR/*-*/ | tr ' ' '\n' | sort -n | head -n -8`"
+
+	echo "To be removed: $to_delete"
+	[ -z "$to_delete" ] || rm -r $to_delete
+}
+
 
 # Big separator in log between executions of the script:
 echo "#######################################################################################################################"
@@ -101,6 +139,7 @@ if [ "$#" -ge 1 ] && [ "$1" = "full" ]; then
 	echo "** Starting a local full backup of the database..."
 	db_local_backup full
 	db_clean
+	vaultwarden_clean
 else
 	echo "** Starting a local incremental backup of the database..."
 	db_local_backup
@@ -108,12 +147,18 @@ fi
 
 data_local_backup
 config_local_backup
+vaultwarden_local_backup
 
 set +e
 backup2beta2023; err1=$?
+
+vaultwarden_backup2beta2023; err2=$?
+
 # Call here functions to backup to external servers
-# backup2toto; err2=$?
-err=$((err1+err2))
+# backup2toto; err3=$?
+# vaultwarden_backup2toto; err4=$?
+
+err=$((err1+err2+err3+err4))
 set -e
 
 if [ $err -gt 0 ]; then
